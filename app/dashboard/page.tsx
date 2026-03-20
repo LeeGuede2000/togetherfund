@@ -3,6 +3,19 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
+type Group = {
+  id: string
+  name: string
+  description: string | null
+  amount: number
+  currency: string
+  frequency: string
+  max_members: number
+  status: string
+  admin_id: string
+  role: string
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -28,9 +41,8 @@ export default async function DashboardPage() {
     `)
     .eq('user_id', user.id)
     .eq('status', 'active')
-
-  const groups = memberships?.map(m => ({
-    ...m.groups,
+const groups: Group[] = memberships?.map(m => ({
+    ...(m.groups as unknown as Omit<Group, 'role'>),
     role: m.role,
   })) || []
 
@@ -98,7 +110,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {groups.map((group: any) => (
+              {groups.map((group) => (
                 <Link key={group.id} href={`/dashboard/groups/${group.id}`}>
                   <div className="border rounded-xl p-5 hover:border-primary transition-colors cursor-pointer">
                     <div className="flex items-start justify-between mb-3">

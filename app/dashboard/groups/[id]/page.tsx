@@ -3,6 +3,22 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
+type User = {
+  id: string
+  full_name: string
+  email: string
+  avatar_url: string | null
+}
+
+type Membership = {
+  id: string
+  role: string
+  position: number | null
+  status: string
+  joined_at: string
+  users: User | null
+}
+
 export default async function GroupDetailPage({
   params,
 }: {
@@ -22,7 +38,7 @@ export default async function GroupDetailPage({
 
   if (!group) notFound()
 
-  const { data: memberships } = await supabase
+  const { data: membershipsData } = await supabase
     .from('memberships')
     .select(`
       id, role, position, status, joined_at,
@@ -30,6 +46,8 @@ export default async function GroupDetailPage({
     `)
     .eq('group_id', id)
     .eq('status', 'active')
+
+  const memberships = membershipsData as Membership[] | null
 
   const { data: activeCycle } = await supabase
     .from('cycles')
@@ -46,7 +64,7 @@ export default async function GroupDetailPage({
     weekly: 'Hebdomadaire',
     biweekly: 'Bimensuel',
     monthly: 'Mensuel',
-  }[group.frequency] || group.frequency
+  }[group.frequency as string] || group.frequency
 
   return (
     <div className="min-h-screen bg-background">
