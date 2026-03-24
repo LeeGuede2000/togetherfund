@@ -168,9 +168,19 @@ export default async function GroupDetailPage({
                           {member.users?.full_name}
                         </span>
                       </div>
-                      <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
-                        En attente
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
+                          En attente
+                        </span>
+                        {member.users?.id === user.id && (
+                          <Link
+                            href={`/dashboard/groups/${id}/contribute`}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            Déclarer →
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -190,7 +200,7 @@ export default async function GroupDetailPage({
               <div className="space-y-3">
                 {memberships?.map((member) => (
                   <div key={member.id} className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-medium flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-medium shrink-0">
                       {member.users?.full_name?.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -201,7 +211,7 @@ export default async function GroupDetailPage({
                         {member.users?.email}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                    <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${
                       member.role === 'admin'
                         ? 'bg-purple-100 text-purple-700'
                         : 'bg-blue-100 text-blue-700'
