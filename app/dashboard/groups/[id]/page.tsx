@@ -100,9 +100,14 @@ export default async function GroupDetailPage({
             </div>
           </div>
           {isAdmin && (
-            <Link href={`/dashboard/groups/${id}/invite`}>
-              <Button>+ Inviter un membre</Button>
-            </Link>
+            <div className="flex gap-3">
+              <Link href={`/dashboard/groups/${id}/invite`}>
+                <Button>+ Inviter un membre</Button>
+              </Link>
+              <Link href={`/dashboard/groups/${id}/admin`}>
+                <Button variant="outline">⚙️ Gérer les contributions</Button>
+              </Link>
+            </div>
           )}
         </div>
 
