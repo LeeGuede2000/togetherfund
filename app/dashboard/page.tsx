@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import LogoutButton from '@/components/logout-button'
 
 type Group = {
   id: string
@@ -41,7 +42,8 @@ export default async function DashboardPage() {
     `)
     .eq('user_id', user.id)
     .eq('status', 'active')
-const groups: Group[] = memberships?.map(m => ({
+
+  const groups: Group[] = memberships?.map(m => ({
     ...(m.groups as unknown as Omit<Group, 'role'>),
     role: m.role,
   })) || []
@@ -51,9 +53,12 @@ const groups: Group[] = memberships?.map(m => ({
 
       <nav className="border-b px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">TogetherFund</h1>
-        <span className="text-sm text-muted-foreground">
-          {profile?.full_name || user.email}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            {profile?.full_name || user.email}
+          </span>
+          <LogoutButton />
+        </div>
       </nav>
 
       <main className="max-w-6xl mx-auto px-6 py-8">

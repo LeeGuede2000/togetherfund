@@ -19,6 +19,11 @@ type Membership = {
   users: User | null
 }
 
+type Contribution = {
+  user_id: string
+  status: string
+}
+
 export default async function GroupDetailPage({
   params,
 }: {
@@ -55,6 +60,39 @@ export default async function GroupDetailPage({
     .eq('group_id', id)
     .eq('status', 'active')
     .single()
+
+  // Récupérer les vrais statuts des contributions
+  const { data: contributionsData } = activeCycle ? await supabase
+    .from('contributions')
+    .select('user_id, status')
+    .eq('cycle_id', activeCycle.id) : { data: [] }
+
+  const contributions = (contributionsData || []) as Contribution[]
+
+  const getContributionStatus = (userId: string) => {
+    const contribution = contributions.find(c => c.user_id === userId)
+    return contribution?.status || 'pending'
+  }
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'validated': return 'bg-green-100 text-green-700'
+      case 'declared': return 'bg-blue-100 text-blue-700'
+      case 'rejected': return 'bg-red-100 text-red-700'
+      case 'late': return 'bg-orange-100 text-orange-700'
+      default: return 'bg-yellow-100 text-yellow-700'
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'validated': return 'Validée ✅'
+      case 'declared': return 'Déclarée'
+      case 'rejected': return 'Rejetée ❌'
+      case 'late': return 'En retard'
+      default: return 'En attente'
+    }
+  }
 
   const userMembership = memberships?.find(m => m.users?.id === user.id)
   const isAdmin = userMembership?.role === 'admin' ||
@@ -163,31 +201,34 @@ export default async function GroupDetailPage({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {memberships?.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                          {member.users?.full_name?.charAt(0).toUpperCase()}
+                  {memberships?.map((member) => {
+                    const status = getContributionStatus(member.users?.id || '')
+                    return (
+                      <div key={member.id} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
+                            {member.users?.full_name?.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="text-sm font-medium">
+                            {member.users?.full_name}
+                          </span>
                         </div>
-                        <span className="text-sm font-medium">
-                          {member.users?.full_name}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs px-2 py-1 rounded-full ${getStatusStyle(status)}`}>
+                            {getStatusLabel(status)}
+                          </span>
+                          {member.users?.id === user.id && status !== 'validated' && (
+                            <Link
+                              href={`/dashboard/groups/${id}/contribute`}
+                              className="text-xs text-primary hover:underline"
+                            >
+                              Déclarer →
+                            </Link>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
-                          En attente
-                        </span>
-                        {member.users?.id === user.id && (
-                          <Link
-                            href={`/dashboard/groups/${id}/contribute`}
-                            className="text-xs text-primary hover:underline"
-                          >
-                            Déclarer →
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
